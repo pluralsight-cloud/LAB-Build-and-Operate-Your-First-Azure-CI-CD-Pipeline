@@ -1,5 +1,4 @@
 # Azure Pipelines YAML for ASP.NET Core (build + publish artifact, no tests)
-# Based on MicrosoftDocs sample patterns, adapted to exclude test steps.
 # Uses a self-hosted Linux agent in the 'Default' pool as per the lab.
 
 trigger:
