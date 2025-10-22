@@ -10,7 +10,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  DotNetSdkVersion: '8.0.x'
+  DotNetSdkVersion: '9.0.x'
 
 steps:
   - checkout: self
