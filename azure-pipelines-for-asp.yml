@@ -11,7 +11,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  DotNetSdkVersion: '8.0.x'   # Use an LTS SDK; adjust if your app targets a different version
+  DotNetSdkVersion: '9.0.x'   # Use an LTS SDK; adjust if your app targets a different version
 
 steps:
   - checkout: self
