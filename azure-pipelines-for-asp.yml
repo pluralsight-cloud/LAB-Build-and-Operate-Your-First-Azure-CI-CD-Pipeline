@@ -1,0 +1,57 @@
+# Azure Pipelines YAML for ASP.NET Core (build + publish artifact, no tests)
+# Based on MicrosoftDocs sample patterns, adapted to exclude test steps.
+# Uses a self-hosted Linux agent in the 'Default' pool as per the lab.
+
+trigger:
+  - main
+
+# If your default branch is 'master' or something else, update the trigger accordingly.
+
+pool:
+  name: Default  # self-hosted agent pool provided in the lab
+
+variables:
+  buildConfiguration: 'Release'
+  DotNetSdkVersion: '8.0.x'   # Use an LTS SDK; adjust if your app targets a different version
+
+steps:
+  - checkout: self
+    clean: true
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK $(DotNetSdkVersion)'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNetSdkVersion)'
+
+  # Restore dependencies
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  # Build solution
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--configuration $(buildConfiguration)'
+
+  # Publish compiled output for downstream stages (no tests)
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish (app)'
+    inputs:
+      command: 'publish'
+      publishWebProjects: true
+      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: true
+
+  # Store the artifact in Azure DevOps (Azure Artifacts storage for pipeline artifacts)
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish pipeline artifact'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifact: 'drop'
+      publishLocation: 'pipeline'

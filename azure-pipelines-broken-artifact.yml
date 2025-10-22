@@ -1,0 +1,52 @@
+# Intentionally Broken YAML: Artifact publish path mismatch
+# Goal: Pipeline runs and builds, but the final artifact publish step fails
+# Fix: Change 'targetPath' to $(Build.ArtifactStagingDirectory)
+
+trigger:
+  - main
+
+pool:
+  name: Default
+
+variables:
+  buildConfiguration: 'Release'
+  DotNetSdkVersion: '8.0.x'
+
+steps:
+  - checkout: self
+    clean: true
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK $(DotNetSdkVersion)'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNetSdkVersion)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore'
+    inputs:
+      command: 'restore'
+      projects: '**/*.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: 'build'
+      projects: '**/*.csproj'
+      arguments: '--configuration $(buildConfiguration)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish (app)'
+    inputs:
+      command: 'publish'
+      publishWebProjects: true
+      arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: true
+
+  # Intentional error: path likely does not exist, so publish fails
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish pipeline artifact (INTENTIONAL FAIL)'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/nonexistent'
+      artifact: 'drop'
+      publishLocation: 'pipeline'
